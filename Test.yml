@@ -1,0 +1,30 @@
+config:
+  target: "https://gateway-service.staging.purefusion.com"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: Warm up
+
+
+before:
+  flow:
+    - log: "Get auth token"
+    - post:
+        url: "/v1/auth/login"
+        json:
+          email: "aziz@stayapp.co"
+          tokenProvider: ""
+          socialToken: ""
+          keepSignedIn: false
+          password: "Test12345!"
+        capture:
+          json: "$.message"
+          as: "userID"
+    - log: {{ userID }}
+    
+scenarios:
+ - name: " Test"
+   flow:
+    - get:
+        url: "/v1/listings/property-listings/c2e55eeb-1511-4768-8e37-50599ce41a8a"
+    - think: 5

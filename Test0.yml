@@ -1,0 +1,102 @@
+config:
+  target: "https://gateway-service.staging.purefusion.com"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: Warm up
+
+
+before:
+  flow:
+    - log: "Get auth token"
+    - post:
+        url: "/v1/auth/login"
+        json:
+          email: "aziz@stayapp.co"
+          tokenProvider: ""
+          socialToken: ""
+          keepSignedIn: false
+          password: "Test12345!"
+        capture:
+          - json: $.data.user.userId
+            as: userID
+    - log: {{userID}}        
+
+    - log: Getting property ID
+    - post:
+        url: "/v1/listings/property-listings"
+        body:
+          {
+            "userId": "{{ userID }}",
+            "status": "available",
+            "visibility": "public",
+            "propertyTypeId": 1000,
+            "houseRulesChildren": true,
+            "houseRulesPets": false,
+            "houseRulesSmoking": false,
+            "houseRulesParty": false,
+            "roomId": 1000,
+            "availabilityId": 1000,
+            "maxTotalGuests": 10,
+            "minGuestVerificationTier": 1,
+            "guestHasAccessToNote": "Backyard is not accesible",
+            "guestHasAccessTo": "Patio",
+            "bookingProcess": "Instant",
+            "totalBedrooms": 2,
+            "squareFootage": 750,
+            "totalBathrooms": 2,
+            "hasPrivateBathrooms": true,
+            "title": "My Beautiful house",
+            "description": "This is a beautiful house",
+            "additionalInformation": "Far enough from Toronto",
+            "rentalRate": 100,
+            "nightlyRate": 100,
+            "cleaningFee": 100,
+            "currencyCode": "CAD",
+            "maxAdvanceBooking": 30,
+            "minStayInNights": 1,
+            "minBookingNotice": 1,
+            "checkinStartTime": "12:45:00",
+            "checkinTimeEarliest": "12:30:00",
+            "checkinTimeLatest": "12:50:00",
+            "checkoutTimeEarliest": "11:00:00",
+            "checkoutTime": "12:00:00",
+            "address": {
+              "userId": "{{ userID }}",
+              "line1": "270 timberbank",
+              "region": "Scarborough",
+              "city": "Toronto",
+              "country": "Canada",
+              "postCode": "M1W2M1",
+              "line2": "apt 20"
+            },
+            "amenities": {
+              "accessibility_elevator": {
+                "available": true,
+                "shared": false
+              }
+            },
+            "general_availability": [
+              "longTerm"
+                ],
+            "location": {
+              "userId": "{{ userID }}",
+              "type": "Point",
+              "coordinates": [
+              -79.384293,
+              43.653908
+              ]
+            }
+          }
+        json: true
+        capture:
+          - json: $.message
+            as: ID
+    - log: {{ ID }} 
+    
+scenarios:
+ - name: " Test"
+   flow:
+    - get:
+        url: "/v1/listings/property-listings/c2e55eeb-1511-4768-8e37-50599ce41a8a"
+    - think: 5
